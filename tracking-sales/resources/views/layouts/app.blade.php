@@ -12,6 +12,8 @@
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
@@ -34,6 +36,10 @@
       @if (Auth::user()->role === 'admin')
         <li class="nav-item">
             <a class="nav-link" href="{{ route('users.index') }}">Commerciaux</a>
+        </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('factures.index') }}">Recharges</a>
         </li>
     @endif
     @endauth

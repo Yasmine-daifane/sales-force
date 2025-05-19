@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CommercialVisitController;
+use App\Http\Controllers\FactureController;
 
 
 use App\Http\Controllers\UserController;
@@ -27,4 +28,7 @@ Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('ho
 
 Route::resource('visits', CommercialVisitController::class);
 Route::resource('users', UserController::class);
+
+Route::resource('factures', FactureController::class);
+Route::get('/factures/export', [FactureController::class, 'export'])->name('factures.export');
 
