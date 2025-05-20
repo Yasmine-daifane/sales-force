@@ -32,3 +32,6 @@ Route::resource('users', UserController::class);
 Route::resource('factures', FactureController::class);
 Route::get('/factures/export', [FactureController::class, 'export'])->name('factures.export');
 
+// Route::post('/factures/scan', [FactureController::class, 'scan'])->name('factures.scan');
+Route::post('/factures/scan', [FactureController::class, 'scan'])->name('factures.scan');
+
