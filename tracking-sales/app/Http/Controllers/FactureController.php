@@ -132,6 +132,7 @@ public function exportPDF()
             'scan' => 'required|file|mimes:jpg,jpeg,png,pdf|max:4096',
         ]);
 
+
         // Store temporarily
         $path = $request->file('scan')->store('temp-scans');
         $fullPath = storage_path('app/' . $path);
@@ -166,17 +167,116 @@ public function exportPDF()
             // Exécuter l'OCR
             $text = $ocr->run();
 
+            // Enregistrer le texte extrait pour le débogage
+            $extractedText = $text;
+
             // Analyser le texte pour extraire les informations pertinentes
-            // Amélioration des expressions régulières pour mieux correspondre aux factures
-            preg_match('/(?:prix|montant|total)\s*:?\s*([\d\s,.]+)(?:\s*[€\$])?/i', $text, $mPrix);
+
+            // Extraction du prix total - Méthode 1: Recherche spécifique du mot TOTAL en fin de document
+            // Recherche la dernière occurrence de TOTAL suivi d'un montant
+            preg_match_all('/(?:TOTAL|Total|total)(?:\s+TTC|\s+à\s+payer)?\s*[:\-]?\s*([\d\s,.]+)\s*(€|\$|EUR)?/i', $text, $allTotalMatches);
+
+            $prix = 0;
+            $matchTotal = [];
+
+            if (!empty($allTotalMatches[0])) {
+                // Prendre la dernière occurrence de TOTAL (généralement le total final)
+                $lastIndex = count($allTotalMatches[0]) - 1;
+                $matchTotal[0] = $allTotalMatches[0][$lastIndex];
+                $matchTotal[1] = $allTotalMatches[1][$lastIndex];
+
+                // Nettoyer le montant
+                $m = preg_replace('/[^\d,.]/', '', $matchTotal[1]);
+                $m = str_replace(',', '.', $m);
+                $prix = floatval($m);
+
+                // Vérifier que le montant est dans une plage raisonnable
+                // et qu'il ne s'agit pas d'une concaténation de chiffres
+                $rawDigits = preg_replace('/[^0-9]/', '', $matchTotal[1]);
+                if ($prix <= 1 || strlen($rawDigits) > 8) {
+                    // Montant suspect, on le rejette
+                    $prix = 0;
+                }
+            }
+
+            // Méthode 2: Recherche dans un format tabulaire
+            if ($prix <= 0) {
+                // Rechercher dans un format de tableau
+                if (preg_match('/TOTAL\s*\|\s*([\d\s,.]+)\s*(€|\$|EUR)?/i', $text, $tableMatch)) {
+                    $m = preg_replace('/[^\d,.]/', '', $tableMatch[1]);
+                    $m = str_replace(',', '.', $m);
+                    $prix = floatval($m);
+                    $matchTotal = $tableMatch;
+                }
+            }
+
+            // Méthode 3: Recherche de la dernière ligne d'un tableau
+            if ($prix <= 0) {
+                // Rechercher tous les montants dans un format de tableau
+                preg_match_all('/\|\s*([\d\s,.]+)\s*(€|\$|EUR)?\s*\|/i', $text, $tableMatches);
+                if (!empty($tableMatches[1])) {
+                    // Prendre le dernier montant du tableau (souvent le total)
+                    $lastAmount = end($tableMatches[1]);
+                    $m = preg_replace('/[^\d,.]/', '', $lastAmount);
+                    $m = str_replace(',', '.', $m);
+                    $tempPrix = floatval($m);
+
+                    // Vérifier que le montant est raisonnable
+                    if ($tempPrix > 1) {
+                        $prix = $tempPrix;
+                        $matchTotal[1] = $lastAmount;
+                    }
+                }
+            }
+
+            // Méthode 4: Recherche de tous les montants avec symbole monétaire
+            if ($prix <= 0) {
+                // Rechercher tous les montants avec symbole € ou format monétaire
+                preg_match_all('/([\d\s,.]+)\s*(€|\$|EUR)/i', $text, $allMatches);
+
+                if (!empty($allMatches[1])) {
+                    $validAmounts = [];
+
+                    foreach ($allMatches[1] as $index => $amount) {
+                        // Nettoyer le montant
+                        $m = preg_replace('/[^\d,.]/', '', $amount);
+                        $m = str_replace(',', '.', $m);
+                        $tempPrix = floatval($m);
+
+                        // Vérifier que le montant est raisonnable et pas une concaténation
+                        $rawDigits = preg_replace('/[^0-9]/', '', $amount);
+                        if ($tempPrix > 1 && strlen($rawDigits) <= 8) {
+                            $validAmounts[] = [
+                                'amount' => $tempPrix,
+                                'raw' => $amount,
+                                'index' => $index
+                            ];
+                        }
+                    }
+
+                    // Trier par position dans le document (préférer les montants vers la fin)
+                    usort($validAmounts, function($a, $b) {
+                        return $b['index'] - $a['index'];
+                    });
+
+                    // Prendre le montant le plus élevé parmi les 3 derniers
+                    $lastAmounts = array_slice($validAmounts, 0, 3);
+                    if (!empty($lastAmounts)) {
+                        usort($lastAmounts, function($a, $b) {
+                            return $b['amount'] - $a['amount'];
+                        });
+
+                        $prix = $lastAmounts[0]['amount'];
+                        $matchTotal[1] = $lastAmounts[0]['raw'];
+                    }
+                }
+            }
+
+            // Extraction des autres informations
             preg_match('/(?:date|émission)\s*:?\s*(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}|\d{4}[\/-]\d{1,2}[\/-]\d{1,2})/i', $text, $mDate);
             preg_match('/(?:département|departement|service)\s*:?\s*([a-zÀ-ÿ\s]+)/i', $text, $mDep);
-            preg_match('/(?:société|societe|fournisseur|client)\s*:?\s*([a-zÀ-ÿ\s]+)/i', $text, $mSoc);
+            preg_match('/(?:société|Entreprise|fournisseur)\s*[:\-\s]+\s*([a-zA-ZÀ-ÿ\s&\'".-]{3,})/i', $text, $mSoc);
             preg_match('/(?:type|paiement|règlement)\s*:?\s*(spc|cheque|virement|carte)/i', $text, $mType);
-
-            // Nettoyer les valeurs extraites
-            $prix = isset($mPrix[1]) ? preg_replace('/[^\d,.]/', '', $mPrix[1]) : '';
-            $prix = str_replace(',', '.', $prix); // Convertir virgule en point pour format numérique
 
             $date = isset($mDate[1]) ? trim($mDate[1]) : '';
             $departement = isset($mDep[1]) ? trim($mDep[1]) : '';
@@ -213,9 +313,9 @@ public function exportPDF()
                 'success' => true,
                 'fields' => $fields,
                 'debug' => [
-                    'extracted_text' => $text,
+                    'extracted_text' => $extractedText,
                     'matches' => [
-                        'prix' => $mPrix,
+                        'prix' => $matchTotal,
                         'date' => $mDate,
                         'departement' => $mDep,
                         'societe' => $mSoc,
@@ -233,4 +333,6 @@ public function exportPDF()
             Storage::delete($path);
         }
     }
+
+
 }

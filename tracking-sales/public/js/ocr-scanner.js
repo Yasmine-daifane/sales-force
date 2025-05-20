@@ -1,4 +1,106 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Ajouter le style CSS pour la notification
+    const style = document.createElement('style');
+    style.textContent = `
+        .custom-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 16px;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+            max-width: 400px;
+        }
+
+        .custom-notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .custom-notification .icon {
+            margin-right: 12px;
+            font-size: 24px;
+        }
+
+        .custom-notification .message {
+            flex-grow: 1;
+            font-size: 16px;
+        }
+
+        .custom-notification .close-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0 8px;
+            margin-left: 8px;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Fonction pour afficher une notification élégante
+    function showNotification(message, type = 'success') {
+        // Supprimer les notifications existantes
+        const existingNotifications = document.querySelectorAll('.custom-notification');
+        existingNotifications.forEach(notification => {
+            notification.remove();
+        });
+
+        // Créer la notification
+        const notification = document.createElement('div');
+        notification.className = 'custom-notification';
+        notification.style.backgroundColor = type === 'success' ? '#4CAF50' : '#F44336';
+
+        // Icône
+        const icon = document.createElement('span');
+        icon.className = 'icon';
+        icon.innerHTML = type === 'success' ? '✓' : '✗';
+        notification.appendChild(icon);
+
+        // Message
+        const messageElement = document.createElement('span');
+        messageElement.className = 'message';
+        messageElement.textContent = message;
+        notification.appendChild(messageElement);
+
+        // Bouton de fermeture
+        const closeButton = document.createElement('button');
+        closeButton.className = 'close-btn';
+        closeButton.innerHTML = '×';
+        closeButton.addEventListener('click', () => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        });
+        notification.appendChild(closeButton);
+
+        // Ajouter la notification au document
+        document.body.appendChild(notification);
+
+        // Afficher la notification avec animation
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 10);
+
+        // Masquer automatiquement après 5 secondes
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 5000);
+    }
+
     // Sélectionner les éléments
     const fileInput = document.querySelector('input[type="file"]:not([name="file"])');
     const scanButton = document.querySelector('button.btn-primary');
@@ -13,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Vérifier si un fichier est sélectionné
             if (!fileInput.files || fileInput.files.length === 0) {
-                alert('Veuillez sélectionner un fichier à scanner.');
+                showNotification('Veuillez sélectionner un fichier à scanner.', 'error');
                 return;
             }
 
@@ -60,16 +162,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
 
-                    alert('Formulaire rempli avec les données extraites');
+                    // Afficher une notification élégante au lieu d'une alerte
+                    showNotification('Succès ! Les données de la facture ont été extraites et le formulaire a été rempli automatiquement.');
                 } else {
-                    alert('Erreur: ' + (data.message || 'Impossible d\'extraire les données'));
+                    showNotification('Erreur: ' + (data.message || 'Impossible d\'extraire les données'), 'error');
                 }
             })
             .catch(error => {
                 console.error('Erreur:', error);
                 scanButton.disabled = false;
                 scanButton.innerHTML = 'Scanner et extraire';
-                alert('Erreur lors de la communication avec le serveur: ' + error.message);
+                showNotification('Erreur lors de la communication avec le serveur: ' + error.message, 'error');
             });
         });
     } else {

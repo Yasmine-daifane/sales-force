@@ -16,7 +16,7 @@ return new class extends Migration
             $table->decimal('prix', 10, 2);
             $table->string('departement');
             $table->date('date');
-            $table->enum('type', ['spc', 'cheque', 'virement']);
+            $table->enum('type', ['espece', 'cheque', 'virement']);
             $table->string('societe'); // fixed or custom
             $table->string('file_path')->nullable(); // scanned doc
             $table->timestamps();
