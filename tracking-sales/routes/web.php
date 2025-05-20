@@ -30,8 +30,13 @@ Route::resource('visits', CommercialVisitController::class);
 Route::resource('users', UserController::class);
 
 Route::resource('factures', FactureController::class);
-Route::get('/factures/export', [FactureController::class, 'export'])->name('factures.export');
+Route::get('factures-export', [FactureController::class, 'export'])->name('factures.export');
+Route::get('factures-export-pdf', [FactureController::class, 'exportPDF'])->name('factures.exportPDF');
 
 // Route::post('/factures/scan', [FactureController::class, 'scan'])->name('factures.scan');
 Route::post('/factures/scan', [FactureController::class, 'scan'])->name('factures.scan');
 
+
+Route::get('/test-factures', function () {
+    return \App\Models\Facture::select('prix', 'departement', 'date', 'type', 'societe')->get();
+});

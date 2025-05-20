@@ -10,7 +10,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\FacturesExport;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use thiagoalessio\TesseractOCR\TesseractOCR; // or another OCR library
-
+use Illuminate\Support\Facades\Log;
 
 
 
@@ -19,23 +19,56 @@ class FactureController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $query = Facture::latest();
+
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('departement', 'like', "%{$search}%")
+                  ->orWhere('societe', 'like', "%{$search}%")
+                  ->orWhere('prix', 'like', "%{$search}%");
+            });
+        }
         $factures = Facture::latest()->paginate(10);
         return view('factures.index', compact('factures'));
     }
     public function export()
-{
-    return Excel::download(new FacturesExport, 'factures.xlsx', \Maatwebsite\Excel\Excel::XLSX);
-}
+    {
+        try {
+            Log::info('Starting factures export');
+            $count = Facture::count();
 
+            if ($count == 0) {
+                Log::warning('No factures to export');
+                return back()->with('error', 'Aucune facture à exporter');
+            }
 
-public function exportPDF()
-{
-    $factures = Facture::all();
-    $pdf = PDF::loadView('factures.pdf', compact('factures'));
-    return $pdf->download('factures.pdf');
-}
+            Log::info('Factures found: ' . $count);
+            return Excel::download(new FacturesExport, 'factures.xlsx');
+        } catch (\Exception $e) {
+            Log::error('Error exporting factures: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            return back()->with('error', 'Erreur lors de l\'exportation: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export factures to PDF
+     */
+    public function exportPDF()
+    {
+        try {
+            $factures = Facture::all();
+            Log::info('Exporting PDF with ' . $factures->count() . ' factures');
+            $pdf = PDF::loadView('factures.pdf', compact('factures'));
+            return $pdf->download('factures.pdf');
+        } catch (\Exception $e) {
+            Log::error('Error exporting PDF: ' . $e->getMessage());
+            return back()->with('error', 'Erreur lors de l\'exportation PDF: ' . $e->getMessage());
+        }
+    }
 
 
 
