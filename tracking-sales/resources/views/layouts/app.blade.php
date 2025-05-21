@@ -47,12 +47,16 @@
         </li>
 
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('factures.index') }}">Recharges</a>
+            <a class="nav-link" href="{{ route('factures.index') }}">Fctures</a>
+        </li>
+
+           <li class="nav-item">
+            <a class="nav-link" href="{{ route('home') }}">Ventes</a>
         </li>
     @endif
     @endauth
  </ul>
-
+{{-- 
  <ul class="navbar-nav me-auto">
 
   @auth
@@ -62,7 +66,7 @@
         </li>
     @endif
     @endauth
-</ul>
+</ul> --}}
 
                     <!-- Right Side Of Navbar -->
                     <ul class="navbar-nav ms-auto">
