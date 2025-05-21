@@ -11,3 +11,5 @@
 
   - for storage : 
 - php artisan storage:link
+  ## API Sanctum
+- composer require laravel/sanctum
