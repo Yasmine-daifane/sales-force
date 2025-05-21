@@ -84,11 +84,11 @@
                                         <span class="text-muted">N/A</span>
                                     @endif
                                 </td>
+
                                 <td>
-                                    <div class="btn-group " role="group">
                                         <a href="{{ route('factures.edit', $facture) }}" class="btn btn-sm btn-warning">Edit</a>
 
-                                       <form action="{{ route('factures.destroy', $facture) }}" method="POST" style="display:inline-block;" class="delete-form">
+                                       <form action="{{ route('factures.destroy', $facture) }}" method="POST"  class="d-inline delete-form">
                             @csrf @method('DELETE')
                             <button type="button" class="btn btn-sm btn-danger delete-btn">Delete</button>
                         </form>

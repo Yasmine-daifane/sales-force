@@ -34,7 +34,7 @@
                     <td>{{ $visit->contact }}</td>
                     <td>{{ $visit->relance_date }}</td>
                     <td>
-                        <a href="{{ route('visits.edit', $visit->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                        <a href="{{ route('visits.edit', $visit->id) }}" class="btn btn-sm btn-warning">Edit</a>
                         <form action="{{ route('visits.destroy', $visit->id) }}" method="POST" class="d-inline">
                             @csrf @method('DELETE')
                             <button onclick="return confirm('Are you sure?')" class="btn btn-sm btn-danger">Delete</button>
