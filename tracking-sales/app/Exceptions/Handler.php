@@ -45,4 +45,45 @@ class Handler extends ExceptionHandler
             //
         });
     }
+
+    /**
+     * Render an exception into an HTTP response.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Throwable  $exception
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function render($request, Throwable $exception)
+    {
+        if ($request->is('api/*') || $request->wantsJson()) {
+            return $this->handleApiException($request, $exception);
+        }
+
+        return parent::render($request, $exception);
+    }
+
+    /**
+     * Handle API exceptions and return JSON responses.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Throwable  $exception
+     * @return \Illuminate\Http\JsonResponse
+     */
+    private function handleApiException($request, Throwable $exception)
+    {
+        $statusCode = 500;
+
+        if ($exception instanceof \Illuminate\Auth\AuthenticationException) {
+            $statusCode = 401;
+        } elseif ($exception instanceof \Illuminate\Validation\ValidationException) {
+            $statusCode = 422;
+        } elseif ($exception instanceof \Symfony\Component\HttpKernel\Exception\HttpException) {
+            $statusCode = $exception->getStatusCode();
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'message' => $exception->getMessage(),
+        ], $statusCode);
+    }
 }
