@@ -1,44 +1,96 @@
-@extends('layouts.app')
+@extends("layouts.app")
 
-@section('content')
-<div class="container">
-    <h1>Mes Visites</h1>
+@section("content")
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-12"> {{-- Use full width or adjust as needed --}}
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white"> {{-- Changed color for distinction --}}
+                    {{-- Use the dynamic title passed from the controller --}}
+                    <h4 class="mb-0">{{ $title }}</h4>
+                </div>
+                <div class="card-body">
+                    {{-- Search Form --}}
+                    <form method="GET" action="{{ route("visits.index") }}" class="mb-4">
+                        <div class="input-group">
+                            {{-- Use the $search variable passed from controller for the value --}}
+                            <input type="text" name="search" class="form-control" placeholder="Rechercher..." value="{{ $search ?? '' }}">
+                            <button class="btn btn-outline-secondary" type="submit">Rechercher</button>
+                        </div>
+                    </form>
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+                    {{-- Add Visit Button (Optional, maybe only for Commercials or Admins?) --}}
+                    @can("create", App\Models\CommercialVisit::class) {{-- Example using Policy --}}
+                        <a href="{{ route("visits.create") }}" class="btn btn-primary mb-3">
+                            Ajouter une visite
+                        </a>
+                    @endcan
 
-    <a href="{{ route('visits.create') }}" class="btn btn-primary mb-3">
-        Ajouter une visite
-    </a>
+                    {{-- Visits Table --}}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    {{-- Show Commercial column only for Admin --}}
+                                    @if(Auth::user() && strtolower(Auth::user()->role ?? '') === 'admin')
+                                        <th>Commercial</th>
+                                    @endif
+                                    <th>Client</th>
+                                    <th>Lieu</th>
+                                    <th>Type Nettoyage</th>
+                                    <th>Date Visite</th>
+                                    <th>Contact</th>
+                                    <th>Date Relance</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($visits as $visit)
+                                    <tr>
+                                        {{-- Show Commercial column only for Admin --}}
+                                        @if(Auth::user() && strtolower(Auth::user()->role ?? '') === 'admin')
+                                            <td>{{ $visit->user->name ?? "N/A" }}</td>
+                                        @endif
+                                        <td>{{ $visit->client_name }}</td>
+                                        <td>{{ $visit->location }}</td>
+                                        <td>{{ $visit->cleaning_type }}</td>
+                                        <td>{{ $visit->visit_date ? \Carbon\Carbon::parse($visit->visit_date)->format("d/m/Y") : "N/A" }}</td>
+                                        <td>{{ $visit->contact }}</td>
+                                        <td>{{ $visit->relance_date ? \Carbon\Carbon::parse($visit->relance_date)->format("d/m/Y") : "N/A" }}</td>
+                                        <td>
+                                            {{-- Add authorization checks for actions if needed --}}
+                                            {{-- @can("update", $visit) --}}
+                                            <a href="{{ route("visits.edit", $visit->id) }}" class="btn btn-sm btn-warning">Modifier</a>
+                                            {{-- @endcan --}}
+                                            {{-- @can("delete", $visit) --}}
+                                            <form action="{{ route("visits.destroy", $visit->id) }}" method="POST" class="d-inline" onsubmit="return confirm("Êtes-vous sûr de vouloir supprimer cette visite ?");">
+                                                @csrf
+                                                @method("DELETE")
+                                                <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                                            </form>
+                                            {{-- @endcan --}}
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        {{-- Adjust colspan based on whether the Commercial column is shown --}}
+                                        <td colspan="{{ (Auth::user() && strtolower(Auth::user()->role ?? '') === 'admin') ? 8 : 7 }}" class="text-center">Aucune visite trouvée.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
 
-    @if($visits->isEmpty())
-        <p>Aucune visite pour le moment.</p>
-    @else
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Date visite</th>
-                <th>Client</th>
-                <th>Type de nettoyage</th>
-                <th>Lieu</th>
-                <th>Contact</th>
-                <th>Date relance</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($visits as $visit)
-            <tr>
-                <td>{{ \Carbon\Carbon::parse($visit->visit_date)->format('Y-m-d') }}</td>
-                <td>{{ $visit->client_name }}</td>
-                <td>{{ $visit->cleaning_type }}</td>
-                <td>{{ $visit->location }}</td>
-                <td>{{ $visit->contact }}</td>
-                <td>{{ \Carbon\Carbon::parse($visit->relance_date)->format('Y-m-d') }}</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-    @endif
-</div>
+                    {{-- Pagination Links - Placed correctly after the table, inside card-body --}}
+                    <div class="d-flex justify-content-center mt-4">
+                        {{-- Controller uses withQueryString(), so simple links() is enough --}}
+                        {{ $visits->links() }}
+                    </div>
+
+                </div> {{-- End card-body --}}
+            </div> {{-- End card --}}
+        </div> {{-- End col --}}
+    </div> {{-- End row --}}
+</div> {{-- End container --}}
 @endsection
+

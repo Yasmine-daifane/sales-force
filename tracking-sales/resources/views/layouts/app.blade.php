@@ -44,6 +44,10 @@
   @auth
       @if (Auth::user()->role === 'admin')
         <li class="nav-item">
+         <li class="nav-item">
+            <a class="nav-link" href="{{ route('home') }}">home</a>
+        </li>
+        
             <a class="nav-link" href="{{ route('users.index') }}">Commerciaux</a>
         </li>
 
@@ -51,8 +55,11 @@
             <a class="nav-link" href="{{ route('factures.index') }}">Fctures</a>
         </li>
 
-           <li class="nav-item">
-            <a class="nav-link" href="{{ route('home') }}">Ventes</a>
+
+
+
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('visits.index') }}">Ventes</a>
         </li>
     @endif
     @endauth
