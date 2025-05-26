@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CommercialVisitController;
 use App\Http\Controllers\FactureController;
 
-
+use App\Http\Controllers\CommercialDashboardController;
 use App\Http\Controllers\UserController;
 
 /*
@@ -40,3 +40,13 @@ Route::post('/factures/scan', [FactureController::class, 'scan'])->name('facture
 Route::get('/test-factures', function () {
     return \App\Models\Facture::select('prix', 'departement', 'date', 'type', 'societe')->get();
 });
+
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/visits', [CommercialVisitController::class, 'index'])->name('visits.index');
+    Route::get('/visits/create', [CommercialVisitController::class, 'create'])->name('visits.create');
+    Route::post('/visits', [CommercialVisitController::class, 'store'])->name('visits.store');
+});
+
+

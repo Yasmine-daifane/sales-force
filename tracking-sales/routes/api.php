@@ -29,3 +29,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
   Route::apiResource('commercial-visits', CommercialVisitController::class);
 
 
+
+
+  

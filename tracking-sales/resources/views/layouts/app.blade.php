@@ -15,6 +15,7 @@
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
 
 <script src="{{ asset('js/ocr-scanner.js') }}"></script>
@@ -56,17 +57,19 @@
     @endif
     @endauth
  </ul>
-{{--
- <ul class="navbar-nav me-auto">
 
-  @auth
-      @if (Auth::user()->role === 'admin')
-        <li class="nav-item">
-            <a class="nav-link" href="{{ route('home') }}">Ventes</a>
-        </li>
-    @endif
-    @endauth
-</ul> --}}
+    <ul class="navbar-nav me-auto">
+                    @auth
+                      @if (Auth::user()->role === 'commercial')
+
+     <li class="nav-item">
+                <a class="nav-link" href="{{ route('visits.index') }}">Mes Visites</a>
+            </li>
+
+                           @endif
+                    @endauth
+                </ul>
+
 
                     <!-- Right Side Of Navbar -->
                     <ul class="navbar-nav ms-auto">
@@ -113,5 +116,8 @@
             @yield('content')
         </main>
     </div>
+
+        @stack('scripts')
+
 </body>
 </html>
