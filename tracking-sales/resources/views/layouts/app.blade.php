@@ -68,11 +68,22 @@
                                     </a>
                                 </li>
                             @elseif (Auth::user()->role === 'commercial')
+
+                             <li class="nav-item">
+                                    <!-- Ajout de la vérification de route active et d'une icône -->
+                                    <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">
+                                        <i class="bi bi-house-door-fill me-1"></i> Home
+                                    </a>
+                                </li>
                                 <li class="nav-item">
+
+
                                      <!-- Assumant que 'visits.index' est la page principale pour les commerciaux -->
                                     <a class="nav-link {{ request()->routeIs('visits.index') ? 'active' : '' }}" href="{{ route('visits.index') }}">
                                         <i class="bi bi-calendar-check-fill me-1"></i> Mes Visites
                                     </a>
+
+
                                 </li>
                                 <!-- Ajoutez d'autres liens spécifiques aux commerciaux ici si nécessaire -->
                             @endif

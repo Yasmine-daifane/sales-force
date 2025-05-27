@@ -5,21 +5,18 @@
     <div class="row justify-content-center">
         <div class="col-lg-12"> {{-- Use full width or adjust as needed --}}
             <div class="card shadow-sm">
-                <div class="card-header bg-info text-white"> {{-- Changed color for distinction --}}
-                    {{-- Use the dynamic title passed from the controller --}}
+                <div class="card-header bg-secondary text-white"> {{-- Changed color for distinction --}}
                     <h4 class="mb-0">{{ $title }}</h4>
                 </div>
                 <div class="card-body">
                     {{-- Search Form --}}
                     <form method="GET" action="{{ route("visits.index") }}" class="mb-4">
                         <div class="input-group">
-                            {{-- Use the $search variable passed from controller for the value --}}
                             <input type="text" name="search" class="form-control" placeholder="Rechercher..." value="{{ $search ?? '' }}">
                             <button class="btn btn-outline-secondary" type="submit">Rechercher</button>
                         </div>
                     </form>
 
-                    {{-- Add Visit Button (Optional, maybe only for Commercials or Admins?) --}}
                     @can("create", App\Models\CommercialVisit::class) {{-- Example using Policy --}}
                         <a href="{{ route("visits.create") }}" class="btn btn-primary mb-3">
                             Ajouter une visite
@@ -31,7 +28,6 @@
                         <table class="table table-bordered table-striped table-hover">
                             <thead class="table-light">
                                 <tr>
-                                    {{-- Show Commercial column only for Admin --}}
                                     @if(Auth::user() && strtolower(Auth::user()->role ?? '') === 'admin')
                                         <th>Commercial</th>
                                     @endif
@@ -47,7 +43,6 @@
                             <tbody>
                                 @forelse ($visits as $visit)
                                     <tr>
-                                        {{-- Show Commercial column only for Admin --}}
                                         @if(Auth::user() && strtolower(Auth::user()->role ?? '') === 'admin')
                                             <td>{{ $visit->user->name ?? "N/A" }}</td>
                                         @endif
@@ -58,17 +53,14 @@
                                         <td>{{ $visit->contact }}</td>
                                         <td>{{ $visit->relance_date ? \Carbon\Carbon::parse($visit->relance_date)->format("d/m/Y") : "N/A" }}</td>
                                         <td>
-                                            {{-- Add authorization checks for actions if needed --}}
-                                            {{-- @can("update", $visit) --}}
-                                            <a href="{{ route("visits.edit", $visit->id) }}" class="btn btn-sm btn-warning">Modifier</a>
-                                            {{-- @endcan --}}
-                                            {{-- @can("delete", $visit) --}}
+
+                                            {{-- <a href="{{ route("visits.edit", $visit->id) }}" class="btn btn-sm btn-warning">Edit</a> --}}
+
                                             <form action="{{ route("visits.destroy", $visit->id) }}" method="POST" class="d-inline" onsubmit="return confirm("Êtes-vous sûr de vouloir supprimer cette visite ?");">
                                                 @csrf
                                                 @method("DELETE")
-                                                <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                             </form>
-                                            {{-- @endcan --}}
                                         </td>
                                     </tr>
                                 @empty
@@ -82,10 +74,9 @@
                     </div>
 
                     {{-- Pagination Links - Placed correctly after the table, inside card-body --}}
-                    <div class="d-flex justify-content-center mt-4">
-                        {{-- Controller uses withQueryString(), so simple links() is enough --}}
-                        {{ $visits->links() }}
-                    </div>
+                       <div class="d-flex justify-content-end mt-4">
+                            {{ $visits->links() }} {{-- Bootstrap 5 pagination styling is applied by default in Laravel 9+ --}}
+                        </div>
 
                 </div> {{-- End card-body --}}
             </div> {{-- End card --}}
