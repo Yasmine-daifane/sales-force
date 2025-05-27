@@ -1,0 +1,63 @@
+/* Suggestions de style pour custom_navbar.css */
+
+/* Style général de la barre de navigation personnalisée */
+.custom-navbar {
+    /* Vous pouvez changer la couleur de fond ici si bg-light ne convient pas */
+    /* background-color: #f8f9fa; */
+    border-bottom: 1px solid #dee2e6; /* Ajoute une ligne subtile en bas */
+}
+
+/* Style pour les liens de navigation */
+.custom-navbar .nav-link {
+    color: #495057; /* Couleur de texte un peu plus foncée */
+    padding-top: 0.8rem; /* Ajustement du padding pour l'alignement vertical */
+    padding-bottom: 0.8rem;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out; /* Transition douce pour le survol */
+}
+
+/* Style pour les liens au survol */
+.custom-navbar .nav-link:hover {
+    color: #007bff; /* Couleur au survol (bleu Bootstrap par défaut) */
+    /* background-color: #e9ecef; */ /* Léger fond au survol si désiré */
+}
+
+/* Style pour le lien ACTIF */
+.custom-navbar .nav-link.active {
+    font-weight: bold; /* Met en gras le lien actif */
+    color: #0056b3; /* Couleur plus foncée pour le lien actif */
+    border-bottom: 3px solid #0056b3; /* Soulignement épais pour indiquer l'activité */
+    /* Ajustez le padding pour compenser la bordure si nécessaire */
+    padding-bottom: calc(0.8rem - 3px);
+}
+
+/* Style pour les icônes dans les liens */
+.custom-navbar .nav-link i {
+    margin-right: 5px; /* Espace entre l'icône et le texte */
+    vertical-align: middle; /* Meilleur alignement vertical de l'icône */
+}
+
+/* Style pour le dropdown de l'utilisateur */
+.custom-navbar .dropdown-menu {
+    border-radius: 0.25rem; /* Coins arrondis standards */
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); /* Ombre portée standard */
+}
+
+.custom-navbar .dropdown-item {
+    display: flex; /* Utiliser flex pour aligner icône et texte */
+    align-items: center; /* Centrer verticalement */
+    padding: 0.5rem 1rem; /* Ajustement du padding */
+}
+
+.custom-navbar .dropdown-item i {
+    margin-right: 8px; /* Espace pour les icônes dans le dropdown */
+    width: 16px; /* Largeur fixe pour l'alignement */
+    text-align: center;
+}
+
+.custom-navbar .dropdown-item:active {
+    background-color: #007bff; /* Fond bleu lors du clic */
+    color: #fff;
+}
+
+
+
